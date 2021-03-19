@@ -1,8 +1,12 @@
 #include "napi.h"
 
 using namespace Napi;
-
+ 
 void SetPropertyWithCStyleStringAsKey(const CallbackInfo& info) {
+  if(info.Length() != 2)
+  {
+    exit(-2);
+  }
   Object globalObject = info.Env().Global();
   String key = info[0].As<String>();
   Value value = info[1];
@@ -10,6 +14,11 @@ void SetPropertyWithCStyleStringAsKey(const CallbackInfo& info) {
 }
 
 void SetPropertyWithCppStyleStringAsKey(const CallbackInfo& info) {
+  
+  if(info.Length() != 2)
+  {
+    exit(-2);
+  }
   Object globalObject = info.Env().Global();
   String key = info[0].As<String>();
   Value value = info[1];
@@ -17,6 +26,10 @@ void SetPropertyWithCppStyleStringAsKey(const CallbackInfo& info) {
 }
 
 void SetPropertyWithInt32AsKey(const CallbackInfo& info) {
+  if(info.Length() != 2)
+  {
+     exit(-2);
+  }
   Object globalObject = info.Env().Global();
   Number key = info[0].As<Number>();
   Value value = info[1];
@@ -24,6 +37,10 @@ void SetPropertyWithInt32AsKey(const CallbackInfo& info) {
 }
 
 void SetPropertyWithNapiValueAsKey(const CallbackInfo& info) {
+  if(info.Length() != 2)
+  {
+     exit(-2);
+  }
   Object globalObject = info.Env().Global();
   Name key = info[0].As<Name>();
   Value value = info[1];
