@@ -34,6 +34,9 @@ let testModules = [];
 
 // TODO(RaisinTen): Update this when the test filenames
 // are changed into test_*.js.
+
+// npm test --exposed-gc "list of tests"
+// 
 function loadTestModules(currentDirectory = __dirname, pre = '') {
   fs.readdirSync(currentDirectory).forEach((file) => {
     if (currentDirectory === __dirname && (

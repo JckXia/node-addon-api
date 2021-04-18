@@ -998,6 +998,13 @@ inline Symbol Symbol::WellKnown(napi_env env, const std::string& name) {
   return Napi::Env(env).Global().Get("Symbol").As<Object>().Get(name).As<Symbol>();
 }
 
+inline Symbol Symbol::For(napi_env env, const std::string& name) {
+  Object symbObject = Napi::Env(env).Global().Get("Symbol").As<Object>();
+  auto forSymb = symbObject.Get("for").As<Function>().Call(
+      symbObject, {String::New(env, name)});
+  return forSymb.As<Symbol>();
+}
+
 inline Symbol::Symbol() : Name() {
 }
 

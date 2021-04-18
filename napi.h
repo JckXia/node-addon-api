@@ -538,6 +538,9 @@ namespace Napi {
    /// Get a public Symbol (e.g. Symbol.iterator).
    static Symbol WellKnown(napi_env, const std::string& name);
 
+   // Create a symbol in the global registry;
+   static Symbol For(napi_env env, const std::string& name);
+
    Symbol();  ///< Creates a new _empty_ Symbol instance.
    Symbol(napi_env env,
           napi_value value);  ///< Wraps a Node-API value primitive.
