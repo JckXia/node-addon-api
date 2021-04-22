@@ -1017,8 +1017,8 @@ inline Symbol Symbol::For(napi_env env, String description) {
 
 inline Symbol Symbol::For(napi_env env, napi_value description) {
   Object symbObject = Napi::Env(env).Global().Get("Symbol").As<Object>();
-  auto forSymb = symbObject.Get("for").As<Function>().Call(
-      symbObject, {String(env, description)});
+  auto forSymb =
+      symbObject.Get("for").As<Function>().Call(symbObject, {description});
   return forSymb.As<Symbol>();
 }
 
