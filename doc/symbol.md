@@ -34,7 +34,7 @@ If an error occurs, a `Napi::Error` will get thrown. If C++ exceptions are not
 being used, callers should check the result of `Napi::Env::IsExceptionPending` before
 attempting to use the returned value.
 
-### Utf8Value
+### Wellkown
 ```cpp
 static Napi::Symbol Napi::Symbol::WellKnown(napi_env env, const std::string& name);
 ```
@@ -44,5 +44,15 @@ static Napi::Symbol Napi::Symbol::WellKnown(napi_env env, const std::string& nam
 
 Returns a `Napi::Symbol` representing a well-known `Symbol` from the
 `Symbol` registry.
+
+### For
+```cpp
+static Napi::Symbol Napi::Symbol::WellKnown(napi_env env, const std::string& name);
+```
+
+- `[in] env`: The `napi_env` environment in which to construct the `Napi::Symbol` object.
+- `[in] name`: The C++ string representing the `Napi::Symbol` to retrieve.
+
+Register `Napi::Symbol` in the global registry. If symbol already exist retrieve said symbol. Equivalent to `Symbol.for("symb")` called from JS.
 
 [`Napi::Name`]: ./name.md

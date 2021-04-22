@@ -41,10 +41,10 @@ async function test(binding)
       assert(symbolTest === undefined);
     }
 
-    function assertCanCreateOrFetchGlobalSymbols(symbol)
+    function assertCanCreateOrFetchGlobalSymbols(symbol, fetchFunction)
     {
-      const symbOne = binding.symbol.getSymbolFromGlobalRegistry(symbol);
-      const symbTwo = binding.symbol.getSymbolFromGlobalRegistry(symbol);
+      const symbOne = fetchFunction(symbol);
+      const symbTwo = fetchFunction(symbol);
       assert(symbOne && symbTwo);
       assert(symbOne === symbTwo);
     }
@@ -57,9 +57,10 @@ async function test(binding)
     {
       assertSymbolIsWellknown(wellknownProperty);
     }
+   
+    assertCanCreateOrFetchGlobalSymbols("data", binding.symbol.getSymbolFromGlobalRegistry);
+    assertCanCreateOrFetchGlobalSymbols("CppKey", binding.symbol.getSymbolFromGlobalRegistryWithCppKey);
+    assertCanCreateOrFetchGlobalSymbols("CKey", binding.symbol.getSymbolFromGlobalRegistryWithCKey);
 
-    assertCanCreateOrFetchGlobalSymbols("keys");
-    
+    assert(binding.symbol.createNewSymbolWithNoArgs() === undefined);
 }
-
- 

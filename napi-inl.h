@@ -998,10 +998,27 @@ inline Symbol Symbol::WellKnown(napi_env env, const std::string& name) {
   return Napi::Env(env).Global().Get("Symbol").As<Object>().Get(name).As<Symbol>();
 }
 
-inline Symbol Symbol::For(napi_env env, const std::string& name) {
+inline Symbol Symbol::For(napi_env env, const std::string& description) {
+  napi_value descriptionValue = String::New(env, description);
+  return Symbol::For(env, descriptionValue);
+}
+
+inline Symbol Symbol::For(napi_env env, const char* description) {
+  napi_value descriptionValue = description != nullptr
+                                    ? String::New(env, description)
+                                    : static_cast<napi_value>(nullptr);
+  return Symbol::For(env, descriptionValue);
+}
+
+inline Symbol Symbol::For(napi_env env, String description) {
+  napi_value descriptionValue = description;
+  return Symbol::For(env, descriptionValue);
+}
+
+inline Symbol Symbol::For(napi_env env, napi_value description) {
   Object symbObject = Napi::Env(env).Global().Get("Symbol").As<Object>();
   auto forSymb = symbObject.Get("for").As<Function>().Call(
-      symbObject, {String::New(env, name)});
+      symbObject, {String(env, description)});
   return forSymb.As<Symbol>();
 }
 

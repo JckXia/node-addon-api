@@ -1,9 +1,7 @@
 #include <napi.h>
-
 using namespace Napi;
 
-Symbol CreateNewSymbolWithNoArgs(const Napi::CallbackInfo& info) {
-  (void)info;
+Symbol CreateNewSymbolWithNoArgs(const Napi::CallbackInfo&) {
   return Napi::Symbol();
 }
 
@@ -30,7 +28,17 @@ Symbol GetWellknownSymbol(const Napi::CallbackInfo& info) {
 
 Symbol FetchSymbolFromGlobalRegistry(const Napi::CallbackInfo& info) {
   String registrySymbol = info[0].As<String>();
-  return Napi::Symbol::For(info.Env(), registrySymbol.Utf8Value().c_str());
+  return Napi::Symbol::For(info.Env(), registrySymbol);
+}
+
+Symbol FetchSymbolFromGlobalRegistryWithCppKey(const Napi::CallbackInfo& info) {
+  String cppStringKey = info[0].As<String>();
+  return Napi::Symbol::For(info.Env(), cppStringKey.Utf8Value());
+}
+
+Symbol FetchSymbolFromGlobalRegistryWithCKey(const Napi::CallbackInfo& info) {
+  String cppStringKey = info[0].As<String>();
+  return Napi::Symbol::For(info.Env(), cppStringKey.Utf8Value().c_str());
 }
 
 Object InitSymbol(Env env) {
@@ -47,5 +55,10 @@ Object InitSymbol(Env env) {
   exports["getWellKnownSymbol"] = Function::New(env, GetWellknownSymbol);
   exports["getSymbolFromGlobalRegistry"] =
       Function::New(env, FetchSymbolFromGlobalRegistry);
+  exports["getSymbolFromGlobalRegistryWithCKey"] =
+      Function::New(env, FetchSymbolFromGlobalRegistryWithCKey);
+  exports["getSymbolFromGlobalRegistryWithCppKey"] =
+      Function::New(env, FetchSymbolFromGlobalRegistryWithCppKey);
+
   return exports;
 }
