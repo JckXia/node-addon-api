@@ -539,7 +539,7 @@ namespace Napi {
    static Symbol WellKnown(napi_env, const std::string& name);
 
    // Create a symbol in the global registry, UTF-8 Encoded cpp string
-   static Symbol For(napi_env env, const std::string& name);
+   static Symbol For(napi_env env, const std::string& description);
 
    // Create a symbol in the global registry, C style string (null terminated)
    static Symbol For(napi_env env, const char* description = nullptr);

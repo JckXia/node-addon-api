@@ -34,7 +34,7 @@ If an error occurs, a `Napi::Error` will get thrown. If C++ exceptions are not
 being used, callers should check the result of `Napi::Env::IsExceptionPending` before
 attempting to use the returned value.
 
-### Wellkown
+### WellKnown
 ```cpp
 static Napi::Symbol Napi::Symbol::WellKnown(napi_env env, const std::string& name);
 ```
@@ -47,12 +47,15 @@ Returns a `Napi::Symbol` representing a well-known `Symbol` from the
 
 ### For
 ```cpp
-static Napi::Symbol Napi::Symbol::WellKnown(napi_env env, const std::string& name);
+static Napi::Symbol Napi::Symbol::For(napi_env env, const std::string& description);
+static Napi::Symbol Napi::Symbol::For(napi_env env, const char* description = nullptr);
+static Napi::Symbol Napi::Symbol::For(napi_env env, String description);
+static Napi::Symbol Napi::Symbol::For(napi_env env, napi_value description);
 ```
 
 - `[in] env`: The `napi_env` environment in which to construct the `Napi::Symbol` object.
-- `[in] name`: The C++ string representing the `Napi::Symbol` to retrieve.
+- `[in] description`: The C++ string representing the `Napi::Symbol` in the global registry to retrieve.
 
-Register `Napi::Symbol` in the global registry. If symbol already exist retrieve said symbol. Equivalent to `Symbol.for("symb")` called from JS.
+Searches in the global registry for existing symbol with the given name. If the symbol already exist it will be returned, otherwise a new symbol will be created in the registry. It's equivalent to Symbol.for() called from JavaScript.
 
 [`Napi::Name`]: ./name.md
