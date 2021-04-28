@@ -1011,8 +1011,7 @@ inline Symbol Symbol::For(napi_env env, const char* description) {
 }
 
 inline Symbol Symbol::For(napi_env env, String description) {
-  napi_value descriptionValue = description;
-  return Symbol::For(env, descriptionValue);
+  return Symbol::For(env, static_cast<napi_value>(description));
 }
 
 inline Symbol Symbol::For(napi_env env, napi_value description) {

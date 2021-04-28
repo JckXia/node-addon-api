@@ -53,14 +53,14 @@ async function test(binding)
     assertSymbolAreUnique("symbol"); 
     assertSymbolIsNotWellknown("testing");
 
-    for(const wellknownProperty of wellKnownSymbolFunctions)
-    {
-      assertSymbolIsWellknown(wellknownProperty);
-    }
+     for(const wellknownProperty of wellKnownSymbolFunctions)
+     {
+       assertSymbolIsWellknown(wellknownProperty);
+     }
    
-    assertCanCreateOrFetchGlobalSymbols("data", binding.symbol.getSymbolFromGlobalRegistry);
-    assertCanCreateOrFetchGlobalSymbols("CppKey", binding.symbol.getSymbolFromGlobalRegistryWithCppKey);
-    assertCanCreateOrFetchGlobalSymbols("CKey", binding.symbol.getSymbolFromGlobalRegistryWithCKey);
+     assertCanCreateOrFetchGlobalSymbols("data", binding.symbol.getSymbolFromGlobalRegistry);
+     assertCanCreateOrFetchGlobalSymbols("CppKey", binding.symbol.getSymbolFromGlobalRegistryWithCppKey);
+     assertCanCreateOrFetchGlobalSymbols("CKey", binding.symbol.getSymbolFromGlobalRegistryWithCKey);
 
     assert(binding.symbol.createNewSymbolWithNoArgs() === undefined);
 }
