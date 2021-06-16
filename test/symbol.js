@@ -63,4 +63,5 @@ async function test(binding)
      assertCanCreateOrFetchGlobalSymbols("CKey", binding.symbol.getSymbolFromGlobalRegistryWithCKey);
 
     assert(binding.symbol.createNewSymbolWithNoArgs() === undefined);
+    assert(binding.symbol.getSymbolWithNullDescFromGlobalRegistry() === binding.symbol.getSymbolWithNullDescFromGlobalRegistry());
 }

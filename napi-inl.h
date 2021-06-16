@@ -1004,9 +1004,14 @@ inline Symbol Symbol::For(napi_env env, const std::string& description) {
 }
 
 inline Symbol Symbol::For(napi_env env, const char* description) {
-  napi_value descriptionValue = description != nullptr
-                                    ? String::New(env, description)
-                                    : static_cast<napi_value>(nullptr);
+  napi_value descriptionValue;
+
+  if (description) {
+    descriptionValue = String::New(env, description);
+  } else {
+    napi_status status = napi_get_null(env, &descriptionValue);
+    NAPI_THROW_IF_FAILED(env, status, Symbol());
+  }
   return Symbol::For(env, descriptionValue);
 }
 

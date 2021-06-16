@@ -26,6 +26,12 @@ Symbol GetWellknownSymbol(const Napi::CallbackInfo& info) {
                                  registrySymbol.Utf8Value().c_str());
 }
 
+Symbol FetchSymbolWithNullDescFromGlobalRegistrty(
+    const Napi::CallbackInfo& info) {
+  const char* desc = nullptr;
+  return Napi::Symbol::For(info.Env(), desc);
+}
+
 Symbol FetchSymbolFromGlobalRegistry(const Napi::CallbackInfo& info) {
   String registrySymbol = info[0].As<String>();
   return Napi::Symbol::For(info.Env(), registrySymbol);
@@ -53,6 +59,8 @@ Object InitSymbol(Env env) {
   exports["createNewSymbolWithNapi"] =
       Function::New(env, CreateNewSymbolWithNapiString);
   exports["getWellKnownSymbol"] = Function::New(env, GetWellknownSymbol);
+  exports["getSymbolWithNullDescFromGlobalRegistry"] =
+      Function::New(env, FetchSymbolWithNullDescFromGlobalRegistrty);
   exports["getSymbolFromGlobalRegistry"] =
       Function::New(env, FetchSymbolFromGlobalRegistry);
   exports["getSymbolFromGlobalRegistryWithCKey"] =
