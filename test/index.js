@@ -110,6 +110,7 @@ if (napiVersion < 6) {
 
 if (majorNodeVersion < 12) {
   testModules.splice(testModules.indexOf('objectwrap_worker_thread'), 1);
+  testModules.splice(testModules.indexOf('error_terminating_environment'), 1);
 }
 
 if (napiVersion < 8) {
@@ -117,17 +118,17 @@ if (napiVersion < 8) {
 }
 
 (async function() {
-console.log(`Testing with Node-API Version '${napiVersion}'.`);
+  console.log(`Testing with Node-API Version '${napiVersion}'.`);
 
-console.log('Starting test suite\n');
+  console.log('Starting test suite\n');
 
-// Requiring each module runs tests in the module.
-for (const name of testModules) {
-  console.log(`Running test '${name}'`);
-  await require('./' + name);
-};
+  // Requiring each module runs tests in the module.
+  for (const name of testModules) {
+    console.log(`Running test '${name}'`);
+    await require('./' + name);
+  };
 
-console.log('\nAll tests passed!');
+  console.log('\nAll tests passed!');
 })().catch((error) => {
   console.log(error);
   process.exit(1);

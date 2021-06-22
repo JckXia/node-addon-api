@@ -1,15 +1,13 @@
 'use strict';
 
-const buildType = process.config.target_defaults.default_configuration;
 const assert = require('assert');
 
-test(require(`../build/${buildType}/binding.node`));
-test(require(`../build/${buildType}/binding_noexcept.node`));
+module.exports = require('../common').runTest(test);
 
 function test(binding) {
   function testSetProperty(nativeSetProperty) {
     const obj = {};
-    nativeSetProperty(obj, 'test', 1);
+    assert.strictEqual(nativeSetProperty(obj, 'test', 1), true);
     assert.strictEqual(obj.test, 1);
   }
 

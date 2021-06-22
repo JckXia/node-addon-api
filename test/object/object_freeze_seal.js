@@ -1,14 +1,13 @@
 'use strict';
-const buildType = process.config.target_defaults.default_configuration;
+
 const assert = require('assert');
 
-test(require(`../build/${buildType}/binding.node`));
-test(require(`../build/${buildType}/binding_noexcept.node`));
+module.exports = require('../common').runTest(test);
 
 function test(binding) {
     {
         const obj = { x: 'a', y: 'b', z: 'c' };
-        binding.object_freeze_seal.freeze(obj);
+        assert.strictEqual(binding.object_freeze_seal.freeze(obj), true);
         assert.strictEqual(Object.isFrozen(obj), true);
         assert.throws(() => {
           obj.x = 10;
@@ -22,8 +21,20 @@ function test(binding) {
     }
 
     {
+        const obj = new Proxy({ x: 'a', y: 'b', z: 'c' }, {
+          preventExtensions() {
+            throw new Error('foo');
+          },
+        });
+
+        assert.throws(() => {
+          binding.object_freeze_seal.freeze(obj);
+        }, /foo/);
+    }
+
+    {
         const obj = { x: 'a', y: 'b', z: 'c' };
-        binding.object_freeze_seal.seal(obj);
+        assert.strictEqual(binding.object_freeze_seal.seal(obj), true);
         assert.strictEqual(Object.isSealed(obj), true);
         assert.throws(() => {
           obj.w = 'd';
@@ -34,5 +45,17 @@ function test(binding) {
         // Sealed objects allow updating existing properties,
         // so this should not throw.
         obj.x = 'd';
+    }
+
+    {
+        const obj = new Proxy({ x: 'a', y: 'b', z: 'c' }, {
+          preventExtensions() {
+            throw new Error('foo');
+          },
+        });
+
+        assert.throws(() => {
+          binding.object_freeze_seal.seal(obj);
+        }, /foo/);
     }
 }

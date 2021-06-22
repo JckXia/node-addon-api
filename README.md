@@ -70,7 +70,7 @@ and node-addon-api.
 - **[Contributors](#contributors)**
 - **[License](#license)**
 
-## **Current version: 3.1.0**
+## **Current version: 4.0.0**
 
 (See [CHANGELOG.md](CHANGELOG.md) for complete Changelog)
 
@@ -83,7 +83,7 @@ This allows addons built with it to run with Node.js versions which support the 
 **However** the node-addon-api support model is to support only the active LTS Node.js versions. This means that
 every year there will be a new major which drops support for the Node.js LTS version which has gone out of service.
 
-The oldest Node.js version supported by the current version of node-addon-api is Node.js 10.x.
+The oldest Node.js version supported by the current version of node-addon-api is Node.js 12.x.
 
 ## Setup
   - [Installation and usage](doc/setup.md)
@@ -228,6 +228,12 @@ can be published to NPM as standalone packages. It is also recommended to tag
 such packages with `node-addon-api` to provide more visibility to the community.
 
 Quick links to NPM searches: [keywords:node-addon-api](https://www.npmjs.com/search?q=keywords%3Anode-addon-api).
+
+<a name="other-bindings"></a>
+
+### **Other bindings**
+
+- **[napi-rs](https://napi.rs)** - (`Rust`)
 
 <a name="badges"></a>
 

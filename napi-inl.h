@@ -1257,29 +1257,32 @@ inline Value Object::Get(const std::string& utf8name) const {
 }
 
 template <typename ValueType>
-inline void Object::Set(napi_value key, const ValueType& value) {
+inline bool Object::Set(napi_value key, const ValueType& value) {
   napi_status status =
       napi_set_property(_env, _value, key, Value::From(_env, value));
-  NAPI_THROW_IF_FAILED_VOID(_env, status);
+  NAPI_THROW_IF_FAILED(_env, status, false);
+  return true;
 }
 
 template <typename ValueType>
-inline void Object::Set(Value key, const ValueType& value) {
+inline bool Object::Set(Value key, const ValueType& value) {
   napi_status status =
       napi_set_property(_env, _value, key, Value::From(_env, value));
-  NAPI_THROW_IF_FAILED_VOID(_env, status);
+  NAPI_THROW_IF_FAILED(_env, status, false);
+  return true;
 }
 
 template <typename ValueType>
-inline void Object::Set(const char* utf8name, const ValueType& value) {
+inline bool Object::Set(const char* utf8name, const ValueType& value) {
   napi_status status =
       napi_set_named_property(_env, _value, utf8name, Value::From(_env, value));
-  NAPI_THROW_IF_FAILED_VOID(_env, status);
+  NAPI_THROW_IF_FAILED(_env, status, false);
+  return true;
 }
 
 template <typename ValueType>
-inline void Object::Set(const std::string& utf8name, const ValueType& value) {
-  Set(utf8name.c_str(), value);
+inline bool Object::Set(const std::string& utf8name, const ValueType& value) {
+  return Set(utf8name.c_str(), value);
 }
 
 inline bool Object::Delete(napi_value key) {
@@ -1319,10 +1322,11 @@ inline Value Object::Get(uint32_t index) const {
 }
 
 template <typename ValueType>
-inline void Object::Set(uint32_t index, const ValueType& value) {
+inline bool Object::Set(uint32_t index, const ValueType& value) {
   napi_status status =
       napi_set_element(_env, _value, index, Value::From(_env, value));
-  NAPI_THROW_IF_FAILED_VOID(_env, status);
+  NAPI_THROW_IF_FAILED(_env, status, false);
+  return true;
 }
 
 inline bool Object::Delete(uint32_t index) {
@@ -1339,24 +1343,27 @@ inline Array Object::GetPropertyNames() const {
   return Array(_env, result);
 }
 
-inline void Object::DefineProperty(const PropertyDescriptor& property) {
+inline bool Object::DefineProperty(const PropertyDescriptor& property) {
   napi_status status = napi_define_properties(_env, _value, 1,
     reinterpret_cast<const napi_property_descriptor*>(&property));
-  NAPI_THROW_IF_FAILED_VOID(_env, status);
+  NAPI_THROW_IF_FAILED(_env, status, false);
+  return true;
 }
 
-inline void Object::DefineProperties(
+inline bool Object::DefineProperties(
     const std::initializer_list<PropertyDescriptor>& properties) {
   napi_status status = napi_define_properties(_env, _value, properties.size(),
     reinterpret_cast<const napi_property_descriptor*>(properties.begin()));
-  NAPI_THROW_IF_FAILED_VOID(_env, status);
+  NAPI_THROW_IF_FAILED(_env, status, false);
+  return true;
 }
 
-inline void Object::DefineProperties(
+inline bool Object::DefineProperties(
     const std::vector<PropertyDescriptor>& properties) {
   napi_status status = napi_define_properties(_env, _value, properties.size(),
     reinterpret_cast<const napi_property_descriptor*>(properties.data()));
-  NAPI_THROW_IF_FAILED_VOID(_env, status);
+  NAPI_THROW_IF_FAILED(_env, status, false);
+  return true;
 }
 
 inline bool Object::InstanceOf(const Function& constructor) const {
@@ -1403,14 +1410,16 @@ inline void Object::AddFinalizer(Finalizer finalizeCallback,
 }
 
 #if NAPI_VERSION >= 8
-inline void Object::Freeze() {
+inline bool Object::Freeze() {
   napi_status status = napi_object_freeze(_env, _value);
-  NAPI_THROW_IF_FAILED_VOID(_env, status);
+  NAPI_THROW_IF_FAILED(_env, status, false);
+  return true;
 }
 
-inline void Object::Seal() {
+inline bool Object::Seal() {
   napi_status status = napi_object_seal(_env, _value);
-  NAPI_THROW_IF_FAILED_VOID(_env, status);
+  NAPI_THROW_IF_FAILED(_env, status, false);
+  return true;
 }
 #endif  // NAPI_VERSION >= 8
 
@@ -2409,11 +2418,38 @@ inline const std::string& Error::Message() const NAPI_NOEXCEPT {
 inline void Error::ThrowAsJavaScriptException() const {
   HandleScope scope(_env);
   if (!IsEmpty()) {
+#ifdef NODE_API_SWALLOW_UNTHROWABLE_EXCEPTIONS
+    bool pendingException = false;
+
+    // check if there is already a pending exception. If so don't try to throw a
+    // new one as that is not allowed/possible
+    napi_status status = napi_is_exception_pending(_env, &pendingException);
+
+    if ((status != napi_ok) ||
+        ((status == napi_ok) && (pendingException == false))) {
+      // We intentionally don't use `NAPI_THROW_*` macros here to ensure
+      // that there is no possible recursion as `ThrowAsJavaScriptException`
+      // is part of `NAPI_THROW_*` macro definition for noexcept.
+
+      status = napi_throw(_env, Value());
+
+      if (status == napi_pending_exception) {
+        // The environment must be terminating as we checked earlier and there
+        // was no pending exception. In this case continuing will result
+        // in a fatal error and there is nothing the author has done incorrectly
+        // in their code that is worth flagging through a fatal error
+        return;
+      }
+    } else {
+      status = napi_pending_exception;
+    }
+#else
     // We intentionally don't use `NAPI_THROW_*` macros here to ensure
     // that there is no possible recursion as `ThrowAsJavaScriptException`
     // is part of `NAPI_THROW_*` macro definition for noexcept.
 
     napi_status status = napi_throw(_env, Value());
+#endif
 
 #ifdef NAPI_CPP_EXCEPTIONS
     if (status != napi_ok) {
@@ -2594,7 +2630,7 @@ template <typename T>
 inline uint32_t Reference<T>::Ref() {
   uint32_t result;
   napi_status status = napi_reference_ref(_env, _ref, &result);
-  NAPI_THROW_IF_FAILED(_env, status, 1);
+  NAPI_THROW_IF_FAILED(_env, status, 0);
   return result;
 }
 
@@ -2602,7 +2638,7 @@ template <typename T>
 inline uint32_t Reference<T>::Unref() {
   uint32_t result;
   napi_status status = napi_reference_unref(_env, _ref, &result);
-  NAPI_THROW_IF_FAILED(_env, status, 1);
+  NAPI_THROW_IF_FAILED(_env, status, 0);
   return result;
 }
 
@@ -2700,58 +2736,58 @@ inline Napi::Value ObjectReference::Get(const std::string& utf8name) const {
   return scope.Escape(Value().Get(utf8name));
 }
 
-inline void ObjectReference::Set(const char* utf8name, napi_value value) {
+inline bool ObjectReference::Set(const char* utf8name, napi_value value) {
   HandleScope scope(_env);
-  Value().Set(utf8name, value);
+  return Value().Set(utf8name, value);
 }
 
-inline void ObjectReference::Set(const char* utf8name, Napi::Value value) {
+inline bool ObjectReference::Set(const char* utf8name, Napi::Value value) {
   HandleScope scope(_env);
-  Value().Set(utf8name, value);
+  return Value().Set(utf8name, value);
 }
 
-inline void ObjectReference::Set(const char* utf8name, const char* utf8value) {
+inline bool ObjectReference::Set(const char* utf8name, const char* utf8value) {
   HandleScope scope(_env);
-  Value().Set(utf8name, utf8value);
+  return Value().Set(utf8name, utf8value);
 }
 
-inline void ObjectReference::Set(const char* utf8name, bool boolValue) {
+inline bool ObjectReference::Set(const char* utf8name, bool boolValue) {
   HandleScope scope(_env);
-  Value().Set(utf8name, boolValue);
+  return Value().Set(utf8name, boolValue);
 }
 
-inline void ObjectReference::Set(const char* utf8name, double numberValue) {
+inline bool ObjectReference::Set(const char* utf8name, double numberValue) {
   HandleScope scope(_env);
-  Value().Set(utf8name, numberValue);
+  return Value().Set(utf8name, numberValue);
 }
 
-inline void ObjectReference::Set(const std::string& utf8name,
+inline bool ObjectReference::Set(const std::string& utf8name,
                                  napi_value value) {
   HandleScope scope(_env);
-  Value().Set(utf8name, value);
+  return Value().Set(utf8name, value);
 }
 
-inline void ObjectReference::Set(const std::string& utf8name,
+inline bool ObjectReference::Set(const std::string& utf8name,
                                  Napi::Value value) {
   HandleScope scope(_env);
-  Value().Set(utf8name, value);
+  return Value().Set(utf8name, value);
 }
 
-inline void ObjectReference::Set(const std::string& utf8name,
+inline bool ObjectReference::Set(const std::string& utf8name,
                                  std::string& utf8value) {
   HandleScope scope(_env);
-  Value().Set(utf8name, utf8value);
+  return Value().Set(utf8name, utf8value);
 }
 
-inline void ObjectReference::Set(const std::string& utf8name, bool boolValue) {
+inline bool ObjectReference::Set(const std::string& utf8name, bool boolValue) {
   HandleScope scope(_env);
-  Value().Set(utf8name, boolValue);
+  return Value().Set(utf8name, boolValue);
 }
 
-inline void ObjectReference::Set(const std::string& utf8name,
+inline bool ObjectReference::Set(const std::string& utf8name,
                                  double numberValue) {
   HandleScope scope(_env);
-  Value().Set(utf8name, numberValue);
+  return Value().Set(utf8name, numberValue);
 }
 
 inline Napi::Value ObjectReference::Get(uint32_t index) const {
@@ -2759,34 +2795,34 @@ inline Napi::Value ObjectReference::Get(uint32_t index) const {
   return scope.Escape(Value().Get(index));
 }
 
-inline void ObjectReference::Set(uint32_t index, napi_value value) {
+inline bool ObjectReference::Set(uint32_t index, napi_value value) {
   HandleScope scope(_env);
-  Value().Set(index, value);
+  return Value().Set(index, value);
 }
 
-inline void ObjectReference::Set(uint32_t index, Napi::Value value) {
+inline bool ObjectReference::Set(uint32_t index, Napi::Value value) {
   HandleScope scope(_env);
-  Value().Set(index, value);
+  return Value().Set(index, value);
 }
 
-inline void ObjectReference::Set(uint32_t index, const char* utf8value) {
+inline bool ObjectReference::Set(uint32_t index, const char* utf8value) {
   HandleScope scope(_env);
-  Value().Set(index, utf8value);
+  return Value().Set(index, utf8value);
 }
 
-inline void ObjectReference::Set(uint32_t index, const std::string& utf8value) {
+inline bool ObjectReference::Set(uint32_t index, const std::string& utf8value) {
   HandleScope scope(_env);
-  Value().Set(index, utf8value);
+  return Value().Set(index, utf8value);
 }
 
-inline void ObjectReference::Set(uint32_t index, bool boolValue) {
+inline bool ObjectReference::Set(uint32_t index, bool boolValue) {
   HandleScope scope(_env);
-  Value().Set(index, boolValue);
+  return Value().Set(index, boolValue);
 }
 
-inline void ObjectReference::Set(uint32_t index, double numberValue) {
+inline bool ObjectReference::Set(uint32_t index, double numberValue) {
   HandleScope scope(_env);
-  Value().Set(index, numberValue);
+  return Value().Set(index, numberValue);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -1,13 +1,9 @@
 'use strict';
 
-const buildType = process.config.target_defaults.default_configuration;
 const assert = require('assert');
 const common = require('../common');
 
-module.exports = (async function() {
-  await test(require(`../build/${buildType}/binding.node`));
-  await test(require(`../build/${buildType}/binding_noexcept.node`));
-})();
+module.exports = common.runTest(test);
 
 async function test(binding) {
   const expectedArray = (function(arrayLength) {
@@ -29,11 +25,9 @@ async function test(binding) {
       binding.threadsafe_function[threadStarter](function testCallback(value) {
         array.push(value);
         if (array.length === quitAfter) {
-          setImmediate(() => {
-            binding.threadsafe_function.stopThread(common.mustCall(() => {
-              resolve(array);
-            }), !!abort);
-          });
+          binding.threadsafe_function.stopThread(common.mustCall(() => {
+            resolve(array);
+          }), !!abort);
         }
       }, !!abort, !!launchSecondary, maxQueueSize);
       if (threadStarter === 'startThreadNonblocking') {

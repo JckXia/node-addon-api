@@ -1,11 +1,8 @@
 'use strict';
 
-const buildType = process.config.target_defaults.default_configuration;
 const assert = require('assert');
 
-test(require(`../build/${buildType}/binding.node`));
-test(require(`../build/${buildType}/binding_noexcept.node`));
-
+module.exports = require('../common').runTest(test);
 
 function test(binding) {
     const KEY_TYPE = {
@@ -37,9 +34,9 @@ function test(binding) {
         }
     }
 
-    function assertErrMessageIsThrown(propertyCheckExistanceFunction, errMsg) {
+    function assertErrMessageIsThrown(propertyCheckExistenceFunction, errMsg) {
         assert.throws(() => {
-          propertyCheckExistanceFunction(undefined);
+          propertyCheckExistenceFunction(undefined);
         }, errMsg);
     }
 
