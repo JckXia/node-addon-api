@@ -26,12 +26,6 @@ Symbol GetWellknownSymbol(const Napi::CallbackInfo& info) {
                                  registrySymbol.Utf8Value().c_str());
 }
 
-Symbol FetchSymbolWithNullDescFromGlobalRegistrty(
-    const Napi::CallbackInfo& info) {
-  const char* desc = nullptr;
-  return Napi::Symbol::For(info.Env(), desc);
-}
-
 Symbol FetchSymbolFromGlobalRegistry(const Napi::CallbackInfo& info) {
   String registrySymbol = info[0].As<String>();
   return Napi::Symbol::For(info.Env(), registrySymbol);
@@ -47,6 +41,16 @@ Symbol FetchSymbolFromGlobalRegistryWithCKey(const Napi::CallbackInfo& info) {
   return Napi::Symbol::For(info.Env(), cppStringKey.Utf8Value().c_str());
 }
 
+Symbol TestUndefinedSymbolsCanBeCreated(const Napi::CallbackInfo& info) {
+  Napi::Env env = info.Env();
+  return Napi::Symbol::For(env, env.Undefined());
+}
+
+Symbol TestNullSymbolsCanBeCreated(const Napi::CallbackInfo& info) {
+  Napi::Env env = info.Env();
+  return Napi::Symbol::For(env, env.Null());
+}
+
 Object InitSymbol(Env env) {
   Object exports = Object::New(env);
 
@@ -59,14 +63,15 @@ Object InitSymbol(Env env) {
   exports["createNewSymbolWithNapi"] =
       Function::New(env, CreateNewSymbolWithNapiString);
   exports["getWellKnownSymbol"] = Function::New(env, GetWellknownSymbol);
-  exports["getSymbolWithNullDescFromGlobalRegistry"] =
-      Function::New(env, FetchSymbolWithNullDescFromGlobalRegistrty);
   exports["getSymbolFromGlobalRegistry"] =
       Function::New(env, FetchSymbolFromGlobalRegistry);
   exports["getSymbolFromGlobalRegistryWithCKey"] =
       Function::New(env, FetchSymbolFromGlobalRegistryWithCKey);
   exports["getSymbolFromGlobalRegistryWithCppKey"] =
       Function::New(env, FetchSymbolFromGlobalRegistryWithCppKey);
-
+  exports["testUndefinedSymbolCanBeCreated"] =
+      Function::New(env, TestUndefinedSymbolsCanBeCreated);
+  exports["testNullSymbolCanBeCreated"] =
+      Function::New(env, TestNullSymbolsCanBeCreated);
   return exports;
 }

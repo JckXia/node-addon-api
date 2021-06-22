@@ -1004,14 +1004,7 @@ inline Symbol Symbol::For(napi_env env, const std::string& description) {
 }
 
 inline Symbol Symbol::For(napi_env env, const char* description) {
-  napi_value descriptionValue;
-
-  if (description) {
-    descriptionValue = String::New(env, description);
-  } else {
-    napi_status status = napi_get_null(env, &descriptionValue);
-    NAPI_THROW_IF_FAILED(env, status, Symbol());
-  }
+  napi_value descriptionValue = String::New(env, description);
   return Symbol::For(env, descriptionValue);
 }
 
@@ -1352,13 +1345,15 @@ inline void Object::DefineProperty(const PropertyDescriptor& property) {
   NAPI_THROW_IF_FAILED_VOID(_env, status);
 }
 
-inline void Object::DefineProperties(const std::initializer_list<PropertyDescriptor>& properties) {
+inline void Object::DefineProperties(
+    const std::initializer_list<PropertyDescriptor>& properties) {
   napi_status status = napi_define_properties(_env, _value, properties.size(),
     reinterpret_cast<const napi_property_descriptor*>(properties.begin()));
   NAPI_THROW_IF_FAILED_VOID(_env, status);
 }
 
-inline void Object::DefineProperties(const std::vector<PropertyDescriptor>& properties) {
+inline void Object::DefineProperties(
+    const std::vector<PropertyDescriptor>& properties) {
   napi_status status = napi_define_properties(_env, _value, properties.size(),
     reinterpret_cast<const napi_property_descriptor*>(properties.data()));
   NAPI_THROW_IF_FAILED_VOID(_env, status);
@@ -2414,7 +2409,6 @@ inline const std::string& Error::Message() const NAPI_NOEXCEPT {
 inline void Error::ThrowAsJavaScriptException() const {
   HandleScope scope(_env);
   if (!IsEmpty()) {
-
     // We intentionally don't use `NAPI_THROW_*` macros here to ensure
     // that there is no possible recursion as `ThrowAsJavaScriptException`
     // is part of `NAPI_THROW_*` macro definition for noexcept.
@@ -2731,17 +2725,20 @@ inline void ObjectReference::Set(const char* utf8name, double numberValue) {
   Value().Set(utf8name, numberValue);
 }
 
-inline void ObjectReference::Set(const std::string& utf8name, napi_value value) {
+inline void ObjectReference::Set(const std::string& utf8name,
+                                 napi_value value) {
   HandleScope scope(_env);
   Value().Set(utf8name, value);
 }
 
-inline void ObjectReference::Set(const std::string& utf8name, Napi::Value value) {
+inline void ObjectReference::Set(const std::string& utf8name,
+                                 Napi::Value value) {
   HandleScope scope(_env);
   Value().Set(utf8name, value);
 }
 
-inline void ObjectReference::Set(const std::string& utf8name, std::string& utf8value) {
+inline void ObjectReference::Set(const std::string& utf8name,
+                                 std::string& utf8value) {
   HandleScope scope(_env);
   Value().Set(utf8name, utf8value);
 }
@@ -2751,7 +2748,8 @@ inline void ObjectReference::Set(const std::string& utf8name, bool boolValue) {
   Value().Set(utf8name, boolValue);
 }
 
-inline void ObjectReference::Set(const std::string& utf8name, double numberValue) {
+inline void ObjectReference::Set(const std::string& utf8name,
+                                 double numberValue) {
   HandleScope scope(_env);
   Value().Set(utf8name, numberValue);
 }
